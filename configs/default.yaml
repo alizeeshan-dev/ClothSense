@@ -1,0 +1,89 @@
+paths:
+  data: data
+  split_indices: data/splits
+  models: artifacts/models
+  plots: artifacts/plots
+  processed_examples: artifacts/processed_examples
+  personal_photos: data/personal_photos
+  results: results
+  database: results/clothsense.sqlite
+
+seeds:
+  split: 2027
+  dataloader: 1701
+  experiments: [17, 42, 73]
+
+training:
+  loss: cross_entropy
+  optimizer: adam
+  learning_rate: 0.001
+  batch_size: 128
+  max_epochs: 20
+  early_stopping_patience: 3
+  model_selection_metric: validation_loss
+  num_workers: 0
+  pin_memory: true
+  augmentation: none
+
+model:
+  input_channels: 1
+  conv_channels: [32, 64]
+  kernel_size: 3
+  padding: 1
+  pool_size: 2
+  hidden_units: 128
+  dropout: 0.50
+  num_classes: 10
+
+data:
+  train_size: 45000
+  validation_size: 5000
+  calibration_size: 10000
+  test_size: 10000
+  image_size: [28, 28]
+  channels: 1
+  normalization:
+    # Computed from the 45,000-image training split selected with seeds.split.
+    mean: [0.28602888]
+    std: [0.35298434]
+
+uncertainty:
+  alpha_values: [0.05, 0.10, 0.20]
+  calibration_bin_edges: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  abstention_thresholds: [0.50, 0.60, 0.70, 0.80, 0.90, 0.95]
+  upload_demo_alpha: 0.10
+  upload_demo_abstention_policy: hybrid
+  upload_demo_abstention_threshold: 0.80
+
+shifts:
+  gaussian_noise:
+    mild: 0.10
+    medium: 0.20
+    strong: 0.30
+  rotation_degrees:
+    mild: 10
+    medium: 20
+    strong: 30
+  gaussian_blur_sigma:
+    mild: 0.5
+    medium: 1.0
+    strong: 1.5
+  brightness_contrast:
+    mild_brightness: {brightness: 0.80, contrast: 1.0}
+    strong_brightness: {brightness: 0.60, contrast: 1.0}
+    increased_contrast: {brightness: 1.0, contrast: 1.50}
+  class_imbalance:
+    majority_classes: [0, 1, 8, 9]
+    moderate_minority_fraction: 0.50
+    strong_minority_fraction: 0.20
+
+device:
+  prefer_cuda: true
+  cuda_index: 0
+  deterministic_algorithms: true
+
+inference:
+  # Seed 73 had the lowest validation loss among the three fixed runs.
+  model_seed: 73
+  max_upload_bytes: 5000000
+  default_invert: false
