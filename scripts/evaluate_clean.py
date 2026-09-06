@@ -4,7 +4,11 @@ import argparse
 
 from clothsense.config import DEFAULT_CONFIG_PATH, load_config
 from clothsense.data import build_dataloaders
-from clothsense.evaluation import classification_metrics, collect_logits, save_clean_evaluation
+from clothsense.evaluation import (
+    classification_metrics,
+    collect_logits_with_runtime,
+    save_clean_evaluation,
+)
 from clothsense.plotting import plot_confusion_matrix
 from clothsense.reproducibility import select_device
 from clothsense.training import configuration_hash, load_checkpoint, seed_artifact_paths
@@ -33,7 +37,9 @@ def main() -> None:
         expected_hash = configuration_hash(config)
         if checkpoint["config_hash"] != expected_hash or int(checkpoint["seed"]) != seed:
             raise ValueError(f"Checkpoint metadata does not match seed {seed} and current config")
-        logits, labels, predictions = collect_logits(model, loaders.clean_test, device)
+        logits, labels, predictions, runtime = collect_logits_with_runtime(
+            model, loaders.clean_test, device
+        )
         metrics = classification_metrics(labels, predictions)
         save_clean_evaluation(
             logits,
@@ -45,6 +51,7 @@ def main() -> None:
             checkpoint_path=artifacts.checkpoint,
             outputs_path=artifacts.clean_outputs,
             metrics_path=artifacts.clean_metrics,
+            runtime=runtime,
         )
         plot_confusion_matrix(metrics, artifacts.confusion_matrix)
         print(
@@ -55,4 +62,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

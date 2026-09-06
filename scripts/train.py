@@ -4,7 +4,11 @@ import argparse
 
 from clothsense.config import DEFAULT_CONFIG_PATH, load_config
 from clothsense.data import build_dataloaders
-from clothsense.evaluation import classification_metrics, collect_logits, save_clean_evaluation
+from clothsense.evaluation import (
+    classification_metrics,
+    collect_logits_with_runtime,
+    save_clean_evaluation,
+)
 from clothsense.plotting import plot_confusion_matrix, plot_training_curves
 from clothsense.reproducibility import select_device
 from clothsense.training import EpochMetrics, train_seed
@@ -41,7 +45,9 @@ def run_seed(config, seed: int, *, download: bool) -> None:
     trained = train_seed(config, seed, loaders, device=device, on_epoch=report_epoch)
     plot_training_curves(trained.fit.history, trained.artifacts.training_curves)
 
-    logits, labels, predictions = collect_logits(trained.model, loaders.clean_test, device)
+    logits, labels, predictions, runtime = collect_logits_with_runtime(
+        trained.model, loaders.clean_test, device
+    )
     metrics = classification_metrics(labels, predictions)
     save_clean_evaluation(
         logits,
@@ -53,6 +59,7 @@ def run_seed(config, seed: int, *, download: bool) -> None:
         checkpoint_path=trained.artifacts.checkpoint,
         outputs_path=trained.artifacts.clean_outputs,
         metrics_path=trained.artifacts.clean_metrics,
+        runtime=runtime,
     )
     plot_confusion_matrix(metrics, trained.artifacts.confusion_matrix)
     print(
@@ -74,4 +81,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

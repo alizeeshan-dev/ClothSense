@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -38,6 +38,7 @@ def create_app() -> FastAPI:
         allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
         allow_methods=["GET", "POST"],
         allow_headers=["*"],
+        expose_headers=["X-Max-Upload-Bytes", "X-Supported-Alphas", "X-Default-Invert"],
     )
     application.mount(
         "/charts",
@@ -46,7 +47,12 @@ def create_app() -> FastAPI:
     )
 
     @application.get("/api/classes", response_model=list[ClassItem])
-    def classes() -> list[dict[str, int | str]]:
+    def classes(response: Response) -> list[dict[str, int | str]]:
+        response.headers["X-Max-Upload-Bytes"] = str(config.inference.max_upload_bytes)
+        response.headers["X-Supported-Alphas"] = ",".join(
+            f"{alpha:g}" for alpha in config.uncertainty.alpha_values
+        )
+        response.headers["X-Default-Invert"] = str(config.inference.default_invert).lower()
         return [{"id": class_id, "name": name} for class_id, name in enumerate(CLASS_NAMES)]
 
     @application.post("/api/classify", response_model=ClassificationResponse)

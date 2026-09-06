@@ -9,6 +9,8 @@ general-purpose clothing recognizer.
 
 Python 3.11 or newer is required. The project uses PyTorch/torchvision, NumPy,
 pandas, scikit-learn/SciPy, Pillow, Matplotlib/Seaborn, PyYAML, FastAPI, and Uvicorn.
+The local research interface uses React and Vite and requires a current Node.js LTS
+release.
 
 ```powershell
 python -m venv .venv
@@ -21,6 +23,7 @@ python -m pytest
 
 ```text
 clothsense/                 research, preprocessing, inference, and API modules
+frontend/                   React/Vite research interface
 configs/default.yaml        all experiment and upload settings
 scripts/                    data, training, experiment, reporting, and demo commands
 tests/                      focused Phase 1–6 tests
@@ -86,6 +89,28 @@ python -m uvicorn clothsense.api:app --host 127.0.0.1 --port 8000
 OpenAPI documentation is available at `http://127.0.0.1:8000/docs`. The API reads
 saved checkpoints, uncertainty artifacts, CSVs, and chart files; it never retrains,
 recalibrates, or retains ordinary uploads.
+
+## Local research interface
+
+Keep the API running, then start the React application in a second PowerShell
+window:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://127.0.0.1:5173`. The Vite development server proxies `/api` and
+`/charts` to the local FastAPI server. To use a different API origin, copy
+`frontend/.env.example` to `frontend/.env` and set `VITE_API_BASE_URL`.
+
+Create a production bundle with:
+
+```powershell
+cd frontend
+npm run build
+```
 
 ## Personal-photo qualitative workflow
 

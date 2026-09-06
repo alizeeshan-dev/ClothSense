@@ -74,15 +74,21 @@ def save_clean_evaluation(
     checkpoint_path: str | Path,
     outputs_path: str | Path,
     metrics_path: str | Path,
+    runtime: RuntimeMetrics | None = None,
 ) -> None:
     output_destination = Path(outputs_path)
     output_destination.parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(
-        output_destination,
-        logits=logits.astype(np.float32),
-        labels=labels.astype(np.int64),
-        predictions=predictions.astype(np.int64),
-    )
+    arrays = {
+        "logits": logits.astype(np.float32),
+        "labels": labels.astype(np.int64),
+        "predictions": predictions.astype(np.int64),
+    }
+    if runtime is not None:
+        arrays["evaluation_seconds"] = np.asarray(runtime.evaluation_seconds, dtype=np.float64)
+        arrays["mean_inference_seconds_per_image"] = np.asarray(
+            runtime.mean_inference_seconds_per_image, dtype=np.float64
+        )
+    np.savez_compressed(output_destination, **arrays)
     metrics_destination = Path(metrics_path)
     metrics_destination.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -92,4 +98,6 @@ def save_clean_evaluation(
         "sample_count": int(len(labels)),
         "metrics": metrics,
     }
+    if runtime is not None:
+        payload["runtime"] = runtime.as_dict()
     metrics_destination.write_text(json.dumps(payload, indent=2), encoding="utf-8")

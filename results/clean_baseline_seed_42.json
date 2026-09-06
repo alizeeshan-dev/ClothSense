@@ -210,5 +210,10 @@
         953
       ]
     ]
+  },
+  "runtime": {
+    "evaluation_seconds": 4.057051100011449,
+    "mean_inference_seconds_per_image": 0.00040570511000114493,
+    "sample_count": 10000
   }
 }

@@ -184,15 +184,25 @@ def _selective_rows(result: dict) -> list[tuple[str, None, float | int | None]]:
     return _aggregate_rows(result)
 
 
-def _load_clean_outputs(path: Path, sample_limit: int | None) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def _load_clean_outputs(
+    path: Path,
+    sample_limit: int | None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, RuntimeMetrics | None]:
     with np.load(path, allow_pickle=False) as saved:
         logits = saved["logits"].astype(np.float32)
         labels = saved["labels"].astype(np.int64)
         predictions = saved["predictions"].astype(np.int64)
+        runtime = (
+            RuntimeMetrics(float(saved["evaluation_seconds"]), len(labels))
+            if "evaluation_seconds" in saved.files
+            else None
+        )
     if logits.shape != (len(labels), len(CLASS_NAMES)) or predictions.shape != labels.shape:
         raise ValueError("Saved clean-test outputs have incompatible shapes")
     stop = len(labels) if sample_limit is None else min(sample_limit, len(labels))
-    return logits[:stop], labels[:stop], predictions[:stop]
+    if runtime is not None and stop != len(labels):
+        runtime = None
+    return logits[:stop], labels[:stop], predictions[:stop], runtime
 
 
 def _make_loader(dataset, config: ProjectConfig, sample_limit: int | None) -> DataLoader:
@@ -386,10 +396,9 @@ def run_experiments(
             completed_in_batch: set[int] = set()
             try:
                 if generated is None:
-                    logits, labels, predictions = _load_clean_outputs(
+                    logits, labels, predictions, runtime = _load_clean_outputs(
                         artifacts.clean_outputs, sample_limit
                     )
-                    runtime = None
                 else:
                     loader = _make_loader(generated.dataset, config, sample_limit)
                     logits, labels, predictions, runtime = collect_logits_with_runtime(

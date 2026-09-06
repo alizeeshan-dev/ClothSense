@@ -172,10 +172,12 @@ def list_research_charts(config: ProjectConfig) -> list[dict[str, str]]:
         match = pattern.match(path.name)
         if match is None:
             continue
+        title = match.group(2).replace("_", " ").title()
+        title = title.replace("Ece", "ECE").replace(" Vs ", " vs ")
         charts.append(
             {
                 "name": path.name,
-                "title": match.group(2).replace("_", " ").title(),
+                "title": title,
                 "url": f"/charts/{path.name}",
             }
         )

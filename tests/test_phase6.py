@@ -139,6 +139,9 @@ def test_api_classes_summary_and_charts(api_client):
     assert classes.status_code == 200
     assert len(classes.json()) == 10
     assert classes.json()[0] == {"id": 0, "name": "T-shirt/top"}
+    assert int(classes.headers["x-max-upload-bytes"]) > 0
+    assert classes.headers["x-supported-alphas"] == "0.05,0.1,0.2"
+    assert classes.headers["x-default-invert"] == "false"
     summary = api_client.get("/api/results/summary")
     assert summary.status_code == 200
     assert {"clean", "strongest_shifts", "demo_configuration"} <= summary.json().keys()

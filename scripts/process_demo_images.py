@@ -26,7 +26,10 @@ def main() -> None:
     parser.add_argument("--config", default=str(DEFAULT_CONFIG_PATH))
     parser.add_argument("--input", type=Path)
     parser.add_argument("--output", type=Path)
-    parser.add_argument("--invert", action="store_true")
+    inversion = parser.add_mutually_exclusive_group()
+    inversion.add_argument("--invert", dest="invert", action="store_true")
+    inversion.add_argument("--no-invert", dest="invert", action="store_false")
+    parser.set_defaults(invert=None)
     args = parser.parse_args()
     config = load_config(args.config)
     input_directory = args.input or config.paths.personal_photos

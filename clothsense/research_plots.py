@@ -1,7 +1,13 @@
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
+
+os.environ.setdefault(
+    "MPLCONFIGDIR",
+    str(Path(__file__).resolve().parents[1] / ".cache" / "matplotlib"),
+)
 
 import matplotlib.pyplot as plt
 import numpy as np
