@@ -1,21 +1,87 @@
+# Python environments, caches, coverage, and packaging output
 .venv/
 __pycache__/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
 .cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
 *.py[cod]
 *.egg-info/
+
+# Frontend dependencies and build output
 frontend/node_modules/
 frontend/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Editors and operating-system metadata
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# AI-tool state and internal development handoffs
+**/.agents/
+**/.claude/
+**/.codex/
+**/.gemini/
+**/AGENTS.md
+**/CLAUDE.md
+**/GEMINI.md
+/QA_*.md
+/*_HANDOFF.md
+/*_HANDOVER.md
+/clothsense-project-plan.md
+/results/research_summary.md
+
+# Logs and disposable temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+*~
+
+# Downloaded/generated datasets and private qualitative inputs
 data/FashionMNIST/
 data/splits/*.npz
 data/personal_photos/*
 !data/personal_photos/README.md
 !data/personal_photos/labels.example.csv
+
+# Generated model artifacts; retain the selected upload-inference model
 artifacts/models/*
 !artifacts/models/.gitkeep
+!artifacts/models/seed_73/
+artifacts/models/seed_73/*
+!artifacts/models/seed_73/best_model.pt
+!artifacts/models/seed_73/uncertainty.json
+
+# Preserve final public figures and gallery assets; ignore other root plot output
 artifacts/plots/*.png
 !artifacts/plots/.gitkeep
+!artifacts/plots/[0-9][0-9]_*.png
+!artifacts/plots/fashion_mnist_samples.png
+!artifacts/plots/shift_verification.png
+
 artifacts/processed_examples/*
 !artifacts/processed_examples/.gitkeep
+
+# Local experiment databases and SQLite sidecars
 results/*.sqlite
+results/*.sqlite-journal
+results/*.sqlite-shm
+results/*.sqlite-wal
